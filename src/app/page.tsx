@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, type FormEvent, useEffect } from 'react';
@@ -12,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { createBaseballCardsAction } from './actions';
 import { useToast } from "@/hooks/use-toast";
-import { Wand2 } from 'lucide-react';
+import { Wand2, Repeat } from 'lucide-react';
 
 const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -115,7 +116,7 @@ export default function HomePage() {
               Upload a photo of your young athlete, their team logo, and enter their name to generate unique, fun baseball cards!
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} suppressHydrationWarning={true}>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="playerName" className="text-base">Player's Name</Label>
@@ -203,7 +204,7 @@ export default function HomePage() {
         )}
       </main>
       <footer className="w-full text-center py-6 mt-auto">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground" suppressHydrationWarning={true}>
           &copy; {new Date().getFullYear()} Rookie Card Maker. All rights reserved.
         </p>
       </footer>
