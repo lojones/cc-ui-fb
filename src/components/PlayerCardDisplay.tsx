@@ -32,38 +32,41 @@ export function PlayerCardDisplay({ cardData, playerName, variationNumber }: Pla
   return (
     <Card className="w-full shadow-lg overflow-hidden">
       <CardHeader>
-        <CardTitle className="font-headline">Variation {variationNumber}</CardTitle>
-        <CardDescription>Player: {playerName}</CardDescription>
+        <CardTitle className="font-headline text-xl">Variation {variationNumber}</CardTitle>
+        <CardDescription className="text-base">Player: {playerName}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="front" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="front">Front</TabsTrigger>
-            <TabsTrigger value="back">Back</TabsTrigger>
-          </TabsList>
-          <TabsContent value="front">
-            <div className="aspect-[2.5/3.5] w-full relative bg-muted rounded-lg overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Front Card */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg font-headline text-center">Card Front</h3>
+            <div className="aspect-[2.5/3.5] w-full max-w-md mx-auto relative bg-muted rounded-lg overflow-hidden">
               {cardData.cardFrontDataUri ? (
                 <Image src={cardData.cardFrontDataUri} alt={`${playerName} - Card Front - Variation ${variationNumber}`} layout="fill" objectFit="contain" data-ai-hint="baseball card" />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">Front Preview N/A</div>
               )}
             </div>
-          </TabsContent>
-          <TabsContent value="back">
-            <div className="aspect-[2.5/3.5] w-full relative bg-muted rounded-lg overflow-hidden mb-4">
-               {cardData.cardBackDataUri ? (
+          </div>
+          
+          {/* Back Card */}
+          <div className="space-y-3">
+            <h3 className="font-semibold text-lg font-headline text-center">Card Back</h3>
+            <div className="aspect-[2.5/3.5] w-full max-w-md mx-auto relative bg-muted rounded-lg overflow-hidden">
+              {cardData.cardBackDataUri ? (
                 <Image src={cardData.cardBackDataUri} alt={`${playerName} - Card Back - Variation ${variationNumber}`} layout="fill" objectFit="contain" data-ai-hint="baseball card stats"/>
               ) : (
-                 <div className="flex items-center justify-center h-full text-muted-foreground">Back Preview N/A</div>
+                <div className="flex items-center justify-center h-full text-muted-foreground">Back Preview N/A</div>
               )}
             </div>
-            <div className="mt-4 p-3 bg-secondary/50 rounded-md">
-              <h4 className="font-semibold text-sm mb-1 font-headline">Player Stats:</h4>
-              <p className="text-xs whitespace-pre-wrap">{cardData.playerStats || "No stats generated."}</p>
+            
+            {/* Player Stats */}
+            <div className="p-4 bg-secondary/50 rounded-md">
+              <h4 className="font-semibold text-sm mb-2 font-headline">Player Stats:</h4>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{cardData.playerStats || "No stats generated."}</p>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row justify-end gap-2">
         <Button

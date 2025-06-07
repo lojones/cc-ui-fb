@@ -177,7 +177,7 @@ export default function HomePage() {
         {!isLoading && generatedCards.length > 0 && (
           <section className="space-y-6">
             <h2 className="text-2xl font-bold text-center font-headline">Your Generated Cards!</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-8">
               {generatedCards.map((card, index) => (
                 <PlayerCardDisplay 
                   key={card.id} 
