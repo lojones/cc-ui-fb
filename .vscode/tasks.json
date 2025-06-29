@@ -1,0 +1,82 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Next.js: dev",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^([^\\s].*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\s*▲ Next\\.js",
+          "endsPattern": "ready - started server on .+, url: (https?://.+)"
+        }
+      }
+    },
+    {
+      "label": "Next.js: dev debug",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "dev:debug"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^([^\\s].*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\s*▲ Next\\.js",
+          "endsPattern": "ready - started server on .+, url: (https?://.+)"
+        }
+      }
+    },
+    {
+      "label": "TypeScript: watch",
+      "type": "shell",
+      "command": "npx",
+      "args": ["tsc", "--noEmit", "--watch", "--preserveWatchOutput"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch"
+    }
+  ]
+}

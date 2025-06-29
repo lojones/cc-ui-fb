@@ -43,17 +43,21 @@ export function ImageUploadInput({
         <CardContent className="p-4">
           <label
             htmlFor={id}
-            className={`flex flex-col items-center justify-center space-y-2 cursor-pointer ${aspectRatio} w-full rounded-md`}
+            className={`flex flex-col items-center justify-center space-y-2 cursor-pointer ${aspectRatio} w-full rounded-md relative overflow-hidden`}
+            style={{ minHeight: aspectRatio === 'aspect-square' ? '10rem' : '13rem' }}
           >
             {previewSrc ? (
-              <Image
-                src={previewSrc}
-                alt="Preview"
-                width={aspectRatio === 'aspect-square' ? 200 : 150}
-                height={aspectRatio === 'aspect-square' ? 200 : 200}
-                className="rounded-md object-cover"
-                data-ai-hint={hint}
-              />
+              <div className="absolute inset-0 w-full h-full">
+                <Image
+                  src={previewSrc}
+                  alt="Preview"
+                  fill
+                  className="rounded-md object-cover"
+                  data-ai-hint={hint}
+                  sizes="100vw"
+                  priority
+                />
+              </div>
             ) : (
               <div className={`flex flex-col items-center justify-center text-muted-foreground ${aspectRatio === 'aspect-square' ? 'h-40 w-40' : 'h-52 w-40'}`}>
                 <UploadCloud className="h-12 w-12 mb-2" />

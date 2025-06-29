@@ -89,7 +89,7 @@ The design should be a colorful template with empty boxes for future content pla
     console.log(`${timestamp()} ✅ [GPT-IMAGE] Received response from GPT Image`);
 
     // Extract base64 image data from the response
-    const image_base64 = result.data[0].b64_json;
+    const image_base64 = result.data && result.data[0] && result.data[0].b64_json;
     
     if (!image_base64) {
       console.error(`${timestamp()} ❌ [GPT-IMAGE] No image data received from GPT Image`);

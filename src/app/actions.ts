@@ -9,6 +9,34 @@
 
 import { generateOpenAIComposedCard, type OpenAIComposedCardInput, type OpenAIComposedCardOutput } from "@/ai/flows/generate-openai-composed-card";
 import { getRandomReferenceImages } from "@/lib/referenceImages";
+import { removeBackground, validateImageForBackgroundRemoval } from "@/lib/backgroundRemoval";
+
+/**
+ * Enhanced card input data containing all player and card information
+ */
+export interface EnhancedCardData {
+  // Basic player information
+  playerName: string;
+  playerPosition?: string;
+  teamName?: string;
+  
+  // Card details
+  cardNumber?: string;
+  cardSet?: string;
+  cardYear?: string;
+  
+  // Player biography and custom stats
+  playerBio?: string;
+  customStats?: string;
+  
+  // Style and processing options
+  cardStyle: string;
+  removeBackground: boolean;
+  
+  // Image data
+  playerPhotoDataUri: string;
+  teamLogoDataUri: string;
+}
 
 /**
  * Extended card output that includes a unique identifier
@@ -19,41 +47,42 @@ export interface CardVariation extends OpenAIComposedCardOutput {
 }
 
 /**
- * Main server action that orchestrates the baseball card generation process
+ * Main server action that orchestrates the enhanced baseball card generation process
  * 
  * This function:
- * 1. Validates input parameters (name, photo, logo)
- * 2. Creates 3 different card variations with different styles
- * 3. Uses AI to generate both front/back card images and player stats
- * 4. Returns the generated cards or error messages
+ * 1. Validates all input parameters and processes images
+ * 2. Handles background removal if requested
+ * 3. Creates 3 different card variations with enhanced styling
+ * 4. Uses AI to generate context-aware front/back card images and player stats
+ * 5. Returns the generated cards or error messages
  * 
- * @param playerName - The child's name to put on the card
- * @param playerPhotoDataUri - Base64 data URI of the uploaded player photo
- * @param teamLogoDataUri - Base64 data URI of the uploaded team logo
+ * @param cardData - Enhanced card data containing all player and card information
  * @returns Promise with either generated cards or error message
  */
 export async function createBaseballCardsAction(
-  playerName: string,
-  playerPhotoDataUri: string,
-  teamLogoDataUri: string
+  cardData: EnhancedCardData
 ): Promise<{ cards: CardVariation[] | null; error?: string }> {
   // Helper function to add timestamps to console logs for debugging
   const timestamp = () => new Date().toISOString();
-  console.log(`${timestamp()} 🎯 [ACTION] Starting card generation process`);
-  console.log(`${timestamp()} 📝 [ACTION] Player name:`, playerName);
-  console.log(`${timestamp()} 📸 [ACTION] Photo data URI length:`, playerPhotoDataUri ? playerPhotoDataUri.length : 'null');
-  console.log(`${timestamp()} 🏆 [ACTION] Logo data URI length:`, teamLogoDataUri ? teamLogoDataUri.length : 'null');
+  console.log(`${timestamp()} 🎯 [ACTION] Starting enhanced card generation process`);
+  console.log(`${timestamp()} 📝 [ACTION] Player name:`, cardData.playerName);
+  console.log(`${timestamp()} 🏟️ [ACTION] Position:`, cardData.playerPosition || 'not specified');
+  console.log(`${timestamp()} 🏆 [ACTION] Team:`, cardData.teamName || 'not specified');
+  console.log(`${timestamp()} 🎨 [ACTION] Style:`, cardData.cardStyle);
+  console.log(`${timestamp()} 🖼️ [ACTION] Remove background:`, cardData.removeBackground);
+  console.log(`${timestamp()} 📸 [ACTION] Photo data URI length:`, cardData.playerPhotoDataUri ? cardData.playerPhotoDataUri.length : 'null');
+  console.log(`${timestamp()} 🏆 [ACTION] Logo data URI length:`, cardData.teamLogoDataUri ? cardData.teamLogoDataUri.length : 'null');
 
   // Input validation - ensure all required fields are provided
-  if (!playerName.trim()) {
+  if (!cardData.playerName.trim()) {
     console.log(`${timestamp()} ❌ [ACTION] Validation failed: Player name is required`);
     return { cards: null, error: "Player name is required." };
   }
-  if (!playerPhotoDataUri) {
+  if (!cardData.playerPhotoDataUri) {
     console.log(`${timestamp()} ❌ [ACTION] Validation failed: Player photo is required`);
     return { cards: null, error: "Player photo is required." };
   }
-  if (!teamLogoDataUri) {
+  if (!cardData.teamLogoDataUri) {
     console.log(`${timestamp()} ❌ [ACTION] Validation failed: Team logo is required`);
     return { cards: null, error: "Team logo is required." };
   }
@@ -61,9 +90,47 @@ export async function createBaseballCardsAction(
   try {
     console.log(`${timestamp()} ✅ [ACTION] Validation passed, starting generation`);
     
+    // Step 1: Handle background removal if requested
+    let processedPlayerPhoto = cardData.playerPhotoDataUri;
+    
+    if (cardData.removeBackground) {
+      console.log(`${timestamp()} 🎨 [ACTION] Processing background removal...`);
+      
+      // Validate image before background removal
+      const validation = validateImageForBackgroundRemoval(cardData.playerPhotoDataUri);
+      if (!validation.valid) {
+        console.log(`${timestamp()} ❌ [ACTION] Image validation failed:`, validation.error);
+        return { 
+          cards: null, 
+          error: `Image validation failed: ${validation.error || "Invalid image"}` 
+        };
+      }
+      
+      
+      // Perform background removal
+      const backgroundRemovalResult = await removeBackground(cardData.playerPhotoDataUri);
+      
+      if (backgroundRemovalResult.success) {
+        processedPlayerPhoto = backgroundRemovalResult.processedImageDataUri ?? cardData.playerPhotoDataUri;
+        console.log(`${timestamp()} ✅ [ACTION] Background removal successful using ${backgroundRemovalResult.provider}`);
+      } else {
+        console.log(`${timestamp()} ⚠️ [ACTION] Background removal failed, using original photo:`, backgroundRemovalResult.error);
+        // Continue with original photo - don't fail the entire process
+      }
+    } else {
+      console.log(`${timestamp()} ⏭️ [ACTION] Skipping background removal as requested`);
+    }
+    
     // Configuration for card generation
-    const numVariations = 3; // Generate 3 different card variations for variety
-    const styles = ['modern', 'classic', 'vintage']; // Different visual styles to create variety
+    const numVariations = 1; 
+    const baseStyles = ['modern', 'classic', 'vintage']; // Base visual styles
+    
+    // Use the requested style as primary, then variations for other cards
+    const styles: string[] = [
+      cardData.cardStyle,
+      baseStyles.find(s => s !== cardData.cardStyle) || 'classic',
+      baseStyles.find(s => s !== cardData.cardStyle && s !== baseStyles.find(s => s !== cardData.cardStyle)) || 'vintage'
+    ];
 
     console.log(`${timestamp()} 🔧 [ACTION] Loading reference images for ${numVariations} variations`);
     
@@ -79,17 +146,26 @@ export async function createBaseballCardsAction(
     for (let i = 0; i < numVariations; i++) {
       const referenceImage = referenceImages[i];
       
-      // Build input object for AI card generation
+      // Build enhanced input object for AI card generation
       const input: OpenAIComposedCardInput = {
-        playerName,                    // Child's name for the card
-        playerPhotoDataUri,           // Uploaded photo of the child
-        teamLogoDataUri,              // Uploaded team logo
-        style: styles[i] || 'modern', // Visual style (modern, classic, or vintage)
+        playerName: cardData.playerName,                    // Child's name for the card
+        playerPhotoDataUri: processedPlayerPhoto,           // Processed photo (with background removal if requested)
+        teamLogoDataUri: cardData.teamLogoDataUri,          // Uploaded team logo
+        style: styles[i] || 'modern',                       // Visual style
         frontReferenceImageDataUri: referenceImage?.dataUri, // Template for front design
         backReferenceImageDataUri: referenceImage?.dataUri,  // Template for back design (same as front)
+        
+        // Enhanced fields for better generation
+        playerPosition: cardData.playerPosition,
+        teamName: cardData.teamName,
+        cardNumber: cardData.cardNumber,
+        cardSet: cardData.cardSet,
+        cardYear: cardData.cardYear,
+        playerBio: cardData.playerBio,
+        customStats: cardData.customStats,
       };
       
-      console.log(`${timestamp()} 🎨 [ACTION] Creating variation ${i + 1} with style: ${styles[i]}, reference: ${referenceImage?.filename || 'none'}`);
+      console.log(`${timestamp()} 🎨 [ACTION] Creating enhanced variation ${i + 1} with style: ${styles[i]}, position: ${cardData.playerPosition || 'unspecified'}, reference: ${referenceImage?.filename || 'none'}`);
       
       // Add the generation promise to our array (will execute concurrently)
       generationPromises.push(generateOpenAIComposedCard(input));

@@ -1,0 +1,1 @@
+look at this file src/lib/client-canvas-generator.ts, when layer 5 is overlayed make sure the image fills in the player image container, there should not be any whitespace above, below, left or right.  the player image should completely fill the player image container but the image should not stretch.
